@@ -15,7 +15,7 @@
 #include "../include/test_gui/main_window.hpp"
 #include <QProcess>
 #include "rviz/display.h"
-
+#include <QDebug>
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
@@ -36,25 +36,26 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
 
     ReadSettings();
     setWindowIcon(QIcon(":/images/viwistar_logo.png"));//继承于Qmainwindow类
-    ui.tab_manager->setCurrentIndex(0); // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
-    QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(close()));
-    //QObject::connect(&qnode,SIGNAL(ros))
+    //ui.tab_manager->setCurrentIndex(0); // ensure the first tab is showing - qt-designer should have this already hardwired, but often loses it (settings?).
     /*********************
     ** Logging
     **********************/
-    ui.view_logging->setModel(qnode.loggingModel());
-    QObject::connect(&qnode, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
-    ui.view_listen->setModel(qnode.loggingModelLis());
-    QObject::connect(&qnode, SIGNAL(loggingListen()), this, SLOT(updateLogListen()));
+//    ui.view_logging->setModel(qnode.loggingModel());
+//    QObject::connect(&qnode, SIGNAL(loggingUpdated()), this, SLOT(updateLoggingView()));
+//    ui.view_listen->setModel(qnode.loggingModelLis());
+//    QObject::connect(&qnode, SIGNAL(loggingListen()), this, SLOT(updateLogListen()));
     QObject::connect(&qnode, SIGNAL(realtimeposition()),this,SLOT(updateposition()));
+    qnode.robot_choice = new QProcess();
+    qnode.robot_simulation = new QProcess();
+    qnode.robot_node = new QProcess();
     // & means pointer
     /*********************
     ** Auto Start
     **********************/
-    if(ui.checkbox_remember_settings->isChecked())
-    {
-        on_button_connect_clicked(true);
-    }
+//    if(ui.checkbox_remember_settings->isChecked())
+//    {
+//        on_button_connect_clicked(true);
+//    }
 }
 
 MainWindow::~MainWindow()
@@ -68,26 +69,24 @@ MainWindow::~MainWindow()
 void MainWindow::showNoMasterMessage()
 {
     QMessageBox msgBox;
-    msgBox.setText("Couldn't find the ros master.");
+    msgBox.setText(QString::fromLocal8Bit("未找到主节点，请重新开启主节点"));
     msgBox.exec(); //程序进入消息循环，等待可能的输入，并传递给其他消息窗口
-    //close(); //close  all windows
 }
 
 /*
- * These triggers whenever the button is clicked, regardless of whether it
- * is already checked or not.
+ * To choose the robot type and model, then click "开始运行" to run the rviz of corresponding robot arm.
  */
 void MainWindow::on_button_connect_clicked(bool check)
 {
 
     if(ui.robot_arm_choice->currentIndex()==1 && ui.model_choice->currentIndex()==0)
     {
-        //qnode.rviz.start("rosrun rviz rviz");
-      system("gnome-terminal -x bash -c 'source ~/viwistar_gui3/devel/setup.bash; nohup roslaunch panda_moveit_config demo.launch'&");
+      //QProcess *rosc = new QProcess();
+      qnode.robot_choice->start("roslaunch panda_moveit_config demo.launch");
+      //system("gnome-terminal -x bash -c 'source ~/viwistar_gui3/devel/setup.bash; nohup roslaunch panda_moveit_config demo.launch'&");
     }
     if(ui.robot_arm_choice->currentIndex()==2 && ui.model_choice->currentIndex()==0)
     {
-        //qnode.rviz.start("rosrun rviz rviz");
       system("gnome-terminal -x bash -c 'source ~/viwistar_gui3/devel/setup.bash; nohup roslaunch fanuc_m16ib20_moveit_config demo.launch'&");
     }
     //ui.button_rviz->setEnabled(true);
@@ -105,16 +104,12 @@ void MainWindow::on_button_roscore_clicked()
               QApplication::processEvents();
               ui.button_connect->setEnabled(true);
               ui.button_connect_stop->setEnabled(true);
-              //ui.button_rviz->setEnabled(true);
-             //system("gnome-terminal -x bash -c 'source /opt/ros/indigo/setup.bash;roscore; limited:=true'&");
              flag_start_roscore = false;
          } else {
              ui.button_roscore->setStyleSheet("background-color: rgb(255,255,0);");
              ui.button_roscore->setText(QString::fromLocal8Bit("开启主节点"));
-             //system("killall -g roscore");
              ui.button_connect->setEnabled(false);
              ui.button_connect_stop->setEnabled(false);
-             //ui.button_rviz->setEnabled(false);
              on_shutdown_roscore_clicked();
              flag_start_roscore = true;
          }
@@ -126,33 +121,22 @@ void MainWindow::on_shutdown_roscore_clicked()
     QProcess shutdown;
     shutdown.execute("killall -9 rviz");
     shutdown.waitForFinished();
-//    shutdown.execute("killall -9 roscore");
-//    shutdown.waitForFinished();
-//    shutdown.execute("killall -9 rosmaster");
-//    shutdown.waitForFinished();
-//    shutdown.execute("killall -9 rosout");
-//    shutdown.waitForFinished();
+    shutdown.execute("killall -9 roscore");
+    shutdown.waitForFinished();
+    shutdown.execute("killall -9 rosmaster");
+    shutdown.waitForFinished();
+    shutdown.execute("killall -9 rosout");
+    shutdown.waitForFinished();
 
 }
 
 void MainWindow::on_button_connect_stop_clicked()
 {
-    //qnode.wait(); //close the thread
-    //ui.button_rviz->setEnabled(false);
     QProcess shutdown;
     shutdown.execute("killall -9 rviz");
-    qnode.shutdown();
-    qnode.wait();
+    //qnode.shutdown();
+    //qnode.wait();
 }
-
-//void MainWindow::on_button_rviz_clicked()
-//{
-//    //qnode.rviz.execute("source ~/fanuc_m16ib/devel/setup.bash");
-//    //qnode.rviz.start("nohup roslaunch motion_planning fanuc_m16b.launch &");
-//    //system("gnome-terminal -x bash -c 'roslaunch motion_planning fanuc_m16b.launch'");
-//    system("gnome-terminal -x bash -c 'source ~/fanuc_m16ib/devel/setup.bash; nohup roslaunch motion_planning fanuc_m16b.launch'&");
-//}
-
 
 void MainWindow::on_checkbox_use_environment_stateChanged(int state)
 {
@@ -167,6 +151,88 @@ void MainWindow::on_checkbox_use_environment_stateChanged(int state)
     ui.line_edit_topic->setEnabled(enabled);
 }
 
+void test_gui::MainWindow::on_confirm_input_clicked()
+{
+ // QString
+    double x,y,z,r_x,r_y,r_z,r_w; //origin
+    bool ok;
+    x = QString(ui.lineEdit_origin_x->text()).toDouble(&ok);
+    y = QString(ui.lineEdit_origin_y->text()).toDouble(&ok);
+    z = QString(ui.lineEdit_origin_z->text()).toDouble(&ok);
+    r_x = QString(ui.lineEdit_origin_rotation_x->text()).toDouble(&ok);
+    r_y = QString(ui.lineEdit_origin_rotation_y->text()).toDouble(&ok);
+    r_z = QString(ui.lineEdit_origin_rotation_z->text()).toDouble(&ok);
+    r_w = QString(ui.lineEdit_origin_rotation_w->text()).toDouble(&ok);
+    qnode.set_origin(x,y,z,r_x,r_y,r_z,r_w);
+    double t_x, t_y, t_z, tr_x,tr_y,tr_z,tr_w; //target
+    t_x = QString(ui.lineEdit_target_x->text()).toDouble(&ok);
+    t_y = QString(ui.lineEdit_target_y->text()).toDouble(&ok);
+    t_z = QString(ui.lineEdit_target_z->text()).toDouble(&ok);
+    tr_x = QString(ui.lineEdit_target_rotation_x->text()).toDouble(&ok);
+    tr_y = QString(ui.lineEdit_target_rotation_y->text()).toDouble(&ok);
+    tr_z = QString(ui.lineEdit_target_rotation_z->text()).toDouble(&ok);
+    tr_w = QString(ui.lineEdit_target_rotation_w->text()).toDouble(&ok);
+    qnode.set_target(t_x,t_y,t_z,tr_x,tr_y,tr_z,tr_w);
+    /*qDebug()<<"x:"<<t_x<<endl;
+    qDebug()<<"x:"<<t_y<<endl;*/
+    qnode.robot_simulation->start("rosrun pick_place panda_pick_place");
+    ui.button_begin_simulation->setEnabled(true);
+    //system("gnome-terminal -x bash -c 'source ~/viwistar_gui3/devel/setup.bash; rosrun pick_place panda_pick_place'&");
+}
+
+void test_gui::MainWindow::on_button_begin_simulation_clicked()
+{
+  static bool flag_start_simulation = true;
+  if(flag_start_simulation)
+  {
+
+    ui.confirm_input->setEnabled(false);
+    ui.button_begin_simulation->setStyleSheet("background-color: rgb(255,255,255);");
+    ui.button_begin_simulation->setText(QString::fromLocal8Bit("结束模拟"));
+    flag_start_simulation = false;
+    if(ui.checkbox_use_environment->isChecked())
+    {
+        if(!qnode.init()){
+         showNoMasterMessage();
+         ui.confirm_input->setEnabled(true);
+         ui.button_begin_simulation->setStyleSheet("background-color: rgb(255,255,255);");
+         ui.button_begin_simulation->setText(QString::fromLocal8Bit("开始模拟"));
+         flag_start_simulation = true;
+         ui.button_begin_simulation->setEnabled(false);
+        }
+    }
+    else
+    {
+        if(!qnode.init(ui.line_edit_master->text().toStdString(),
+                          ui.line_edit_host->text().toStdString()))
+        {
+            showNoMasterMessage();
+            ui.confirm_input->setEnabled(true);
+            ui.button_begin_simulation->setStyleSheet("background-color: rgb(255,255,255);");
+            ui.button_begin_simulation->setText(QString::fromLocal8Bit("开始模拟"));
+            flag_start_simulation = true;
+            ui.button_begin_simulation->setEnabled(false);
+        }
+    }
+  }
+  else
+  {
+    //qnode.terminate();
+    //qnode.robot_simulation->terminate();
+    //qDebug()<<qnode.robot_simulation->pid()<<endl;
+
+    qnode.robot_node->execute("rosnode kill /test_gui");
+    qnode.robot_node->execute("rosnode kill /panda_arm_pick_place");
+    qnode.robot_simulation->terminate();
+    ui.confirm_input->setEnabled(true);
+    ui.button_begin_simulation->setStyleSheet("background-color: rgb(255,255,255);");
+    ui.button_begin_simulation->setText(QString::fromLocal8Bit("开始模拟"));
+    flag_start_simulation = true;
+    ui.button_begin_simulation->setEnabled(false);
+  }
+
+}
+
 /*****************************************************************************
 ** Implemenation [Slots][manually connected]
 *****************************************************************************/
@@ -175,15 +241,15 @@ void MainWindow::on_checkbox_use_environment_stateChanged(int state)
  * this will drop the cursor down to the last line in the QListview to ensure
  * the user can always see the latest log message.
  */
-void MainWindow::updateLoggingView()
-{
-    ui.view_logging->scrollToBottom();
-}
+//void MainWindow::updateLoggingView()
+//{
+//    ui.view_logging->scrollToBottom();
+//}
 
-void MainWindow::updateLogListen()
-{
-    ui.view_listen->scrollToBottom();
-}
+//void MainWindow::updateLogListen()
+//{
+//    ui.view_listen->scrollToBottom();
+//}
 
 void MainWindow::updateposition()
 {
@@ -197,13 +263,7 @@ void MainWindow::updateposition()
   ui.label_realtime_rotation_z->setText(qnode.tempStr.setNum(qnode.transformStamped.transform.rotation.z,format,prec));
   ui.label_realtime_rotation_w->setText(qnode.tempStr.setNum(qnode.transformStamped.transform.rotation.w,format,prec));
 }
-//void test_gui::MainWindow::on_button_connect_clicked()
-//{
-//    if(ui.robot_arm_choice->currentIndex()==2 && ui.model_choice->currentIndex()==0)
-//    {
-//        qnode.rviz.start("rosrun rviz rviz");
-//    }
-//}
+
 /*****************************************************************************
 ** Implementation [Configuration]
 *****************************************************************************/
@@ -226,7 +286,6 @@ void MainWindow::ReadSettings()
     {
         ui.line_edit_master->setEnabled(false);
         ui.line_edit_host->setEnabled(false);
-        //ui.line_edit_topic->setEnabled(false);
     }
 }
 
@@ -249,9 +308,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
       if (result==QMessageBox::Yes)
        {
           WriteSettings();
-          //qnode.roscore.kill(); //kill roscore
-          qnode.wait(); //close the thread
           on_shutdown_roscore_clicked();
+          qnode.robot_node->execute("rosnode kill /test_gui");
+          qnode.robot_simulation->terminate();
+          qnode.shutdown();
+          qnode.terminate();
+          qnode.wait(); //close the thread
+          //on_shutdown_roscore_clicked();
           event->accept();
       }
 
@@ -265,55 +328,3 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }  // namespace test_gui
 
 
-void test_gui::MainWindow::on_confirm_input_clicked()
-{
- // QString
-
-    double x,y,z,r_x,r_y,r_z,r_w; //origin
-    bool ok;
-    x = QString(ui.lineEdit_origin_x->text()).toDouble(&ok);
-    y = QString(ui.lineEdit_origin_y->text()).toDouble(&ok);
-    z = QString(ui.lineEdit_origin_z->text()).toDouble(&ok);
-    r_x = QString(ui.lineEdit_origin_rotation_x->text()).toDouble(&ok);
-    r_y = QString(ui.lineEdit_origin_rotation_y->text()).toDouble(&ok);
-    r_z = QString(ui.lineEdit_origin_rotation_z->text()).toDouble(&ok);
-    r_w = QString(ui.lineEdit_origin_rotation_w->text()).toDouble(&ok);
-    double t_x, t_y, t_z, tr_x,tr_y,tr_z,tr_w; //target
-    t_x = QString(ui.lineEdit_target_x->text()).toDouble(&ok);
-    t_y = QString(ui.lineEdit_target_x->text()).toDouble(&ok);
-    t_z = QString(ui.lineEdit_target_x->text()).toDouble(&ok);
-    tr_x = QString(ui.lineEdit_target_rotation_x->text()).toDouble(&ok);
-    tr_y = QString(ui.lineEdit_target_rotation_y->text()).toDouble(&ok);
-    tr_z = QString(ui.lineEdit_target_rotation_z->text()).toDouble(&ok);
-    tr_w = QString(ui.lineEdit_target_rotation_w->text()).toDouble(&ok);
-    qnode.set_origin(x,y,z,r_x,r_y,r_z,r_w);
-    qnode.set_target(t_x,t_y,t_z,tr_x,tr_y,tr_z,tr_w);
-
-    system("gnome-terminal -x bash -c 'source ~/viwistar_gui3/devel/setup.bash; nohup rosrun pick_place panda_pick_place'&");
-}
-
-void test_gui::MainWindow::on_button_begin_simulation_clicked()
-{
-  if(ui.checkbox_use_environment->isChecked())
-  {
-      if(!qnode.init())
-          showNoMasterMessage();
-      else
-          ui.button_connect->setEnabled(true);
-  }
-  else
-  {
-      if(!qnode.init(ui.line_edit_master->text().toStdString(),
-                        ui.line_edit_host->text().toStdString()))
-      {
-          showNoMasterMessage();
-      }
-      else
-      {
-          ui.button_connect->setEnabled(true);
-          ui.line_edit_master->setReadOnly(true);
-          ui.line_edit_host->setReadOnly(true);
-          ui.line_edit_topic->setReadOnly(true);
-      }
-  }
-}

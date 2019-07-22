@@ -17,7 +17,8 @@
 #include <std_msgs/String.h>
 #include <sstream>
 #include "../include/test_gui/qnode.hpp"
-#include "test_gui/SrvTransform.h"
+#include <QDebug>
+//#include "test_gui/SrvTransform.h"
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
@@ -49,14 +50,14 @@ bool QNode::init()
         return false;
     }
     ros::start(); // explicitly needed since our nodehandle is going out of scope.
-    ros::NodeHandle n;
-    ros::NodeHandle nSub;
+    //ros::NodeHandle n;
+    //ros::NodeHandle nSub;
     ros::NodeHandle nh;
     // Add your ros communications here.
-    chatter_publisher = n.advertise<std_msgs::String>("testgui_chat", 1000);
+    //chatter_publisher = n.advertise<std_msgs::String>("testgui_chat", 1000);
     //ros::Subscriber realtime_pos=nSub.subscribe("tf");
     origin_target_client = nh.serviceClient<test_gui::SrvTransform>("origin_target_position");
-    chatter_subscriber = nSub.subscribe("testgui_chat", 100, &QNode::RecvTopicCallback, this);
+    //chatter_subscriber = nSub.subscribe("testgui_chat", 100, &QNode::RecvTopicCallback, this);
 
     //ros::spin();
     start(); //QThread::start -> run()
@@ -74,24 +75,24 @@ bool QNode::init(const std::string &master_url, const std::string &host_url)
         return false;
     }
     ros::start(); // explicitly needed since our nodehandle is going out of scope.
-    ros::NodeHandle n;
-    ros::NodeHandle nSub;
+    //ros::NodeHandle n;
+   // ros::NodeHandle nSub;
     ros::NodeHandle nh;
     // Add your ros communications here.
     //ros::ServiceClient eef_position_client = n.serviceClient<ros
-    chatter_publisher = n.advertise<std_msgs::String>("testgui_chat", 1000);
+    //chatter_publisher = n.advertise<std_msgs::String>("testgui_chat", 1000);
     origin_target_client = nh.serviceClient<test_gui::SrvTransform>("origin_target_position");
-    chatter_subscriber = nSub.subscribe("testgui_chat", 100, &QNode::RecvTopicCallback, this);
+    //chatter_subscriber = nSub.subscribe("testgui_chat", 100, &QNode::RecvTopicCallback, this);
     start();
     return true;
 }
 
 
-void QNode::RecvTopicCallback(const std_msgs::StringConstPtr &msg)
-{
-    log_listen(Info, std::string("I heard: ")+msg->data.c_str());
-    //c_str()返回一个带有\0的指向正规string指针常量(为了与c语言兼容）data()不保证有没有null-terminate
-}
+//void QNode::RecvTopicCallback(const std_msgs::StringConstPtr &msg)
+//{
+//    log_listen(Info, std::string("I heard: ")+msg->data.c_str());
+//    //c_str()返回一个带有\0的指向正规string指针常量(为了与c语言兼容）data()不保证有没有null-terminate
+//}
 
 void QNode::run()   //from QThread, after start()
 {
@@ -100,27 +101,15 @@ void QNode::run()   //from QThread, after start()
     tf2_ros::TransformListener tfListenser(tfBuffer); //realtime pisition
    // QString tempStr;
     //ros::Duration initDur(2);
-    test_gui::SrvTransform position_srv;
-    position_srv.request.o_x = origin_position.transform.translation.x;
-    position_srv.request.o_y = origin_position.transform.translation.y;
-    position_srv.request.o_z = origin_position.transform.translation.z;
-    position_srv.request.or_x = origin_position.transform.rotation.x;
-    position_srv.request.or_y = origin_position.transform.rotation.y;
-    position_srv.request.or_z = origin_position.transform.rotation.z;
-    position_srv.request.or_w = origin_position.transform.rotation.w;
-    position_srv.request.t_x = target_position.transform.translation.x;
-    position_srv.request.t_y = target_position.transform.translation.y;
-    position_srv.request.t_z = target_position.transform.translation.z;
-    position_srv.request.tr_x = target_position.transform.rotation.x;
-    position_srv.request.tr_y = target_position.transform.rotation.y;
-    position_srv.request.tr_z = target_position.transform.rotation.z;
-    position_srv.request.tr_w = target_position.transform.rotation.w;
-    static bool flag_service_once = true;
+    bool flag_service_once = true;
+//    qDebug()<<"position:"<<position_srv.request.target.translation.x<<endl;
+//    qDebug()<<flag_service_once<<std::endl;
     while (flag_service_once)
     {
       if(origin_target_client.call(position_srv))
       {flag_service_once = false;}
     }
+    //qDebug()<<"haha"<<flag_service_once<<std::endl;
     //int count = 0;
     ros::Rate loop_rate(5);
     while (ros::ok())
@@ -151,15 +140,14 @@ void QNode::run()   //from QThread, after start()
       //ROS_INFO("send msg = %d", msg.data);
      // log(Info,std::string("I sent: ")+msg.data);
 
-
-
         ros::spinOnce();
         loop_rate.sleep();
         //initDur.sleep();
        // ++count;
     }
     std::cout << "Ros shutdown, proceeding to close the gui." << std::endl;
-    //wait();
+    terminate();
+    wait();
     //Q_EMIT rosShutdown(); // emit 避免冲突，调用这个信号connect时所关联的槽函数
                         //used to signal the gui for a shutdown (useful to roslaunch)
 }
@@ -236,108 +224,108 @@ void QNode::run()   //from QThread, after start()
 
 void QNode::set_origin(double x, double y, double z,double r_x,double r_y,double r_z,double r_w)
 {
-    origin_position.transform.translation.x = x;
-    origin_position.transform.translation.y = y;
-    origin_position.transform.translation.z = z;
-    origin_position.transform.rotation.x = r_x;
-    origin_position.transform.rotation.y = r_y;
-    origin_position.transform.rotation.z = r_z;
-    origin_position.transform.rotation.w = r_w;
+    position_srv.request.origin.translation.x = x;
+    position_srv.request.origin.translation.y = y;
+    position_srv.request.origin.translation.z = z;
+    position_srv.request.origin.rotation.x = r_x;
+    position_srv.request.origin.rotation.y = r_y;
+    position_srv.request.origin.rotation.z = r_z;
+    position_srv.request.origin.rotation.w = r_w;
 }
 
 void QNode::set_target(double x, double y, double z,double r_x,double r_y,double r_z,double r_w)
 {
-    target_position.transform.translation.x = x;
-    target_position.transform.translation.y = y;
-    target_position.transform.translation.z = z;
-    target_position.transform.rotation.x = r_x;
-    target_position.transform.rotation.y = r_y;
-    target_position.transform.rotation.z = r_z;
-    target_position.transform.rotation.w = r_w;
+    position_srv.request.target.translation.x = x;
+    position_srv.request.target.translation.y = y;
+    position_srv.request.target.translation.z = z;
+    position_srv.request.target.rotation.x = r_x;
+    position_srv.request.target.rotation.y = r_y;
+    position_srv.request.target.rotation.z = r_z;
+    position_srv.request.target.rotation.w = r_w;
 }
 
-void QNode::log(const LogLevel &level, const std::string &msg)
-{
-    logging_model.insertRows(logging_model.rowCount(),1);//insert only 1 data
-    std::stringstream logging_model_msg;
-    switch (level)
-    {
-        case(Debug):
-        {
-            ROS_DEBUG_STREAM(msg);
-            logging_model_msg << "[DEBUG] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Info):
-        {
-            ROS_INFO_STREAM(msg);
-            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Warn):
-        {
-            ROS_WARN_STREAM(msg);
-            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Error):
-        {
-            ROS_ERROR_STREAM(msg);
-            logging_model_msg << "[ERROR] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Fatal):
-        {
-            ROS_FATAL_STREAM(msg);
-            logging_model_msg << "[FATAL] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-    }
-    QVariant new_row(QString(logging_model_msg.str().c_str()));//.str()提取成string
-    logging_model.setData(logging_model.index(logging_model.rowCount()-1),new_row);
-    Q_EMIT loggingUpdated(); // used to readjust the scrollbar
-}
+//void QNode::log(const LogLevel &level, const std::string &msg)
+//{
+//    logging_model.insertRows(logging_model.rowCount(),1);//insert only 1 data
+//    std::stringstream logging_model_msg;
+//    switch (level)
+//    {
+//        case(Debug):
+//        {
+//            ROS_DEBUG_STREAM(msg);
+//            logging_model_msg << "[DEBUG] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Info):
+//        {
+//            ROS_INFO_STREAM(msg);
+//            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Warn):
+//        {
+//            ROS_WARN_STREAM(msg);
+//            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Error):
+//        {
+//            ROS_ERROR_STREAM(msg);
+//            logging_model_msg << "[ERROR] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Fatal):
+//        {
+//            ROS_FATAL_STREAM(msg);
+//            logging_model_msg << "[FATAL] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//    }
+//    QVariant new_row(QString(logging_model_msg.str().c_str()));//.str()提取成string
+//    logging_model.setData(logging_model.index(logging_model.rowCount()-1),new_row);
+//    Q_EMIT loggingUpdated(); // used to readjust the scrollbar
+//}
 
-void QNode::log_listen(const LogLevel &level, const std::string &msg)
-{
-    logging_listen.insertRows(logging_listen.rowCount(),1);
-    std::stringstream logging_model_msg;
-    switch (level)
-    {
-        case(Debug):
-        {
-            ROS_DEBUG_STREAM(msg);
-            logging_model_msg << "[DEBUG] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Info):
-        {
-            ROS_INFO_STREAM(msg);
-            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Warn):
-        {
-            ROS_WARN_STREAM(msg);
-            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Error):
-        {
-            ROS_ERROR_STREAM(msg);
-            logging_model_msg << "[ERROR] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-        case(Fatal):
-        {
-            ROS_FATAL_STREAM(msg);
-            logging_model_msg << "[FATAL] [" << ros::Time::now() << "]: " << msg;
-            break;
-        }
-    }
-    QVariant new_row(QString(logging_model_msg.str().c_str()));
-    logging_listen.setData(logging_listen.index(logging_listen.rowCount()-1),new_row);
-    Q_EMIT loggingListen(); // used to readjust the scrollbar
-}
+//void QNode::log_listen(const LogLevel &level, const std::string &msg)
+//{
+//    logging_listen.insertRows(logging_listen.rowCount(),1);
+//    std::stringstream logging_model_msg;
+//    switch (level)
+//    {
+//        case(Debug):
+//        {
+//            ROS_DEBUG_STREAM(msg);
+//            logging_model_msg << "[DEBUG] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Info):
+//        {
+//            ROS_INFO_STREAM(msg);
+//            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Warn):
+//        {
+//            ROS_WARN_STREAM(msg);
+//            logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Error):
+//        {
+//            ROS_ERROR_STREAM(msg);
+//            logging_model_msg << "[ERROR] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//        case(Fatal):
+//        {
+//            ROS_FATAL_STREAM(msg);
+//            logging_model_msg << "[FATAL] [" << ros::Time::now() << "]: " << msg;
+//            break;
+//        }
+//    }
+//    QVariant new_row(QString(logging_model_msg.str().c_str()));
+//    logging_listen.setData(logging_listen.index(logging_listen.rowCount()-1),new_row);
+//    Q_EMIT loggingListen(); // used to readjust the scrollbar
+//}
 
 }  // namespace test_gui

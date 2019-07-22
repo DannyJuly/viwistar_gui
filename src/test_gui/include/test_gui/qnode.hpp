@@ -25,6 +25,7 @@
 #include <QWidget>
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
+#include "test_gui/SrvTransform.h"
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
@@ -47,11 +48,13 @@ public:
       {ros::shutdown();}
     void set_origin(double x, double y, double z,double r_x,double r_y,double r_z,double r_w);
     void set_target(double x, double y, double z,double r_x,double r_y,double r_z,double r_w);
-    QProcess roscore;
-    QProcess rviz;
     geometry_msgs::TransformStamped transformStamped;
     geometry_msgs::TransformStamped origin_position;
     geometry_msgs::TransformStamped target_position;
+    SrvTransform position_srv;
+    QProcess *robot_choice;
+    QProcess *robot_simulation;
+    QProcess *robot_node;
     QString tempStr;
     /*********************
     ** Logging
@@ -65,19 +68,19 @@ public:
         Fatal
     };
 
-    QStringListModel* loggingModel()
+/*    QStringListModel* loggingModel()
         {return &logging_model;}
     void log( const LogLevel &level, const std::string &msg);
 
     void RecvTopicCallback(const std_msgs::StringConstPtr &msg);
     QStringListModel* loggingModelLis()
         {return &logging_listen;}
-    void log_listen(const LogLevel &level, const std::string &msg);
+    void log_listen(const LogLevel &level, const std::string &msg);*/
 
 Q_SIGNALS:
-    void loggingUpdated();
-    void loggingListen();
-    void rosShutdown();
+    //void loggingUpdated();
+    //void loggingListen();
+    //void rosShutdown();
     void realtimeposition();
 
 private:

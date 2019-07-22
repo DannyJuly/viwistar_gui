@@ -966,6 +966,9 @@ margin-top:0.5ex;
         </item>
         <item row="7" column="2">
          <widget class="QPushButton" name="button_begin_simulation">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="text">
            <string>开始模拟</string>
           </property>
@@ -1120,6 +1123,37 @@ margin-top:0.5ex;
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>line_edit_master</tabstop>
+  <tabstop>line_edit_host</tabstop>
+  <tabstop>line_edit_topic</tabstop>
+  <tabstop>checkbox_use_environment</tabstop>
+  <tabstop>checkbox_remember_settings</tabstop>
+  <tabstop>button_roscore</tabstop>
+  <tabstop>robot_arm_choice</tabstop>
+  <tabstop>model_choice</tabstop>
+  <tabstop>button_connect</tabstop>
+  <tabstop>button_connect_stop</tabstop>
+  <tabstop>tab_manager</tabstop>
+  <tabstop>lineEdit_origin_x</tabstop>
+  <tabstop>lineEdit_origin_y</tabstop>
+  <tabstop>lineEdit_origin_z</tabstop>
+  <tabstop>lineEdit_origin_rotation_x</tabstop>
+  <tabstop>lineEdit_origin_rotation_y</tabstop>
+  <tabstop>lineEdit_origin_rotation_z</tabstop>
+  <tabstop>lineEdit_origin_rotation_w</tabstop>
+  <tabstop>lineEdit_target_x</tabstop>
+  <tabstop>lineEdit_target_y</tabstop>
+  <tabstop>lineEdit_target_z</tabstop>
+  <tabstop>lineEdit_target_rotation_x</tabstop>
+  <tabstop>lineEdit_target_rotation_y</tabstop>
+  <tabstop>lineEdit_target_rotation_z</tabstop>
+  <tabstop>lineEdit_target_rotation_w</tabstop>
+  <tabstop>confirm_input</tabstop>
+  <tabstop>button_begin_simulation</tabstop>
+  <tabstop>view_logging</tabstop>
+  <tabstop>view_listen</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/images.qrc"/>
  </resources>

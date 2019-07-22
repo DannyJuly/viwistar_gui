@@ -51,8 +51,8 @@ public Q_SLOTS://Q_SLOTS 避免和第三方库冲突
     /******************************************
     ** Manual connections
     *******************************************/
-    void updateLoggingView(); // no idea why this can't connect automatically
-    void updateLogListen();
+    //void updateLoggingView(); // no idea why this can't connect automatically
+    //void updateLogListen();
     void on_button_connect_stop_clicked();
     void on_button_roscore_clicked();
     void on_shutdown_roscore_clicked();

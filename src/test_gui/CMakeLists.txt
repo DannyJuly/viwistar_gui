@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS qt_build
 )
 
 add_service_files(FILES SrvTransform.srv)
-generate_messages(DEPENDENCIES std_msgs)
+generate_messages(DEPENDENCIES geometry_msgs)
 
 include_directories(${catkin_INCLUDE_DIRS})
 # Use this to define what the package will export (e.g. libs, headers).
