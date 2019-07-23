@@ -47,7 +47,6 @@ public Q_SLOTS://Q_SLOTS 避免和第三方库冲突
         *******************************************/
     void on_button_connect_clicked(bool check );
     void on_checkbox_use_environment_stateChanged(int state);
-
     /******************************************
     ** Manual connections
     *******************************************/
@@ -65,6 +64,7 @@ public Q_SLOTS://Q_SLOTS 避免和第三方库冲突
 private:
     Ui::MainWindowDesign ui;
     QNode qnode;
+    QProcess *rosc;
 };
 
 }  // namespace test_gui

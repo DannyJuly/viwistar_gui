@@ -269,10 +269,10 @@ int main(int argc, char** argv)
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
   moveit::planning_interface::MoveGroupInterface group("panda_arm");
   group.setPlanningTime(70.0);
-  std::cout<<"input to be confirmed"<<std::endl;
+ // std::cout<<"input to be confirmed"<<std::endl;
   while(server.flag);   //等待启动gui的确认输入
-  std::cout<<"input confirmed"<<std::endl;
-  std::cout<<server.target.translation.x<<std::endl;
+ // std::cout<<"input confirmed"<<std::endl;
+  //std::cout<<server.target.translation.x<<std::endl;
   addCollisionObjects(planning_scene_interface,server.origin);
 // Wait a bit for ROS things to initialize
   ros::WallDuration(1.0).sleep();
@@ -284,7 +284,7 @@ int main(int argc, char** argv)
   place(group,server.target);
 
   ros::waitForShutdown();
-  std::cout<<"pick and place shut down"<<std::endl;
+  //std::cout<<"pick and place shut down"<<std::endl;
   return 0;
 }
 

@@ -48,6 +48,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     qnode.robot_choice = new QProcess();
     qnode.robot_simulation = new QProcess();
     qnode.robot_node = new QProcess();
+    rosc = new QProcess();
     // & means pointer
     /*********************
     ** Auto Start
@@ -94,7 +95,7 @@ void MainWindow::on_button_connect_clicked(bool check)
 
 void MainWindow::on_button_roscore_clicked()
 {
-    QProcess *rosc = new QProcess();
+   // QProcess *rosc = new QProcess();
      static bool flag_start_roscore = true;
          if (flag_start_roscore) {
               ui.button_roscore->setStyleSheet("background-color: rgb(255,0,0);");
@@ -110,12 +111,13 @@ void MainWindow::on_button_roscore_clicked()
              ui.button_roscore->setText(QString::fromLocal8Bit("开启主节点"));
              ui.button_connect->setEnabled(false);
              ui.button_connect_stop->setEnabled(false);
-             on_shutdown_roscore_clicked();
+             rosc->terminate();
+             on_shutdown_roscore_clicked();  //double check and close rviz
              flag_start_roscore = true;
          }
 }
 
-void MainWindow::on_shutdown_roscore_clicked()
+void MainWindow::on_shutdown_roscore_clicked()   //make sure they are all closed
 {
 
     QProcess shutdown;
@@ -134,6 +136,7 @@ void MainWindow::on_button_connect_stop_clicked()
 {
     QProcess shutdown;
     shutdown.execute("killall -9 rviz");
+    qnode.robot_simulation->terminate();
     //qnode.shutdown();
     //qnode.wait();
 }
@@ -145,7 +148,6 @@ void MainWindow::on_checkbox_use_environment_stateChanged(int state)
         enabled = true;
     else
         enabled = false;
-
     ui.line_edit_master->setEnabled(enabled);
     ui.line_edit_host->setEnabled(enabled);
     ui.line_edit_topic->setEnabled(enabled);
@@ -153,7 +155,7 @@ void MainWindow::on_checkbox_use_environment_stateChanged(int state)
 
 void test_gui::MainWindow::on_confirm_input_clicked()
 {
- // QString
+ //read the input of target and origin position from lineEdit
     double x,y,z,r_x,r_y,r_z,r_w; //origin
     bool ok;
     x = QString(ui.lineEdit_origin_x->text()).toDouble(&ok);
@@ -185,7 +187,6 @@ void test_gui::MainWindow::on_button_begin_simulation_clicked()
   static bool flag_start_simulation = true;
   if(flag_start_simulation)
   {
-
     ui.confirm_input->setEnabled(false);
     ui.button_begin_simulation->setStyleSheet("background-color: rgb(255,255,255);");
     ui.button_begin_simulation->setText(QString::fromLocal8Bit("结束模拟"));
@@ -217,12 +218,9 @@ void test_gui::MainWindow::on_button_begin_simulation_clicked()
   }
   else
   {
-    //qnode.terminate();
-    //qnode.robot_simulation->terminate();
     //qDebug()<<qnode.robot_simulation->pid()<<endl;
-
     qnode.robot_node->execute("rosnode kill /test_gui");
-    qnode.robot_node->execute("rosnode kill /panda_arm_pick_place");
+    //qnode.robot_node->execute("rosnode kill /panda_arm_pick_place");
     qnode.robot_simulation->terminate();
     ui.confirm_input->setEnabled(true);
     ui.button_begin_simulation->setStyleSheet("background-color: rgb(255,255,255);");
@@ -308,13 +306,19 @@ void MainWindow::closeEvent(QCloseEvent *event)
       if (result==QMessageBox::Yes)
        {
           WriteSettings();
+          rosc->terminate();
           on_shutdown_roscore_clicked();
           qnode.robot_node->execute("rosnode kill /test_gui");
+          qnode.robot_node->execute("killall -9 bash");
           qnode.robot_simulation->terminate();
           qnode.shutdown();
           qnode.terminate();
           qnode.wait(); //close the thread
           //on_shutdown_roscore_clicked();
+          delete qnode.robot_choice;
+          delete qnode.robot_simulation;
+          delete qnode.robot_node;
+          delete rosc;
           event->accept();
       }
 
