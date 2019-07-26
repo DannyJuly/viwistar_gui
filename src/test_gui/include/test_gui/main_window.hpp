@@ -15,7 +15,10 @@
 #include <QtGui/QMainWindow>
 #include "ui_main_window.h" //该文件不显示，直接用于ui界面
 #include "qnode.hpp"
-
+#include "transform.hpp"
+#include <tf/LinearMath/Transform.h>
+#include <tf/LinearMath/Quaternion.h>
+#include <tf/LinearMath/Vector3.h>
 /*****************************************************************************
 ** Namespace
 *****************************************************************************/
@@ -60,11 +63,15 @@ public Q_SLOTS://Q_SLOTS 避免和第三方库冲突
     void on_confirm_input_clicked();
     void updateposition();
     void on_button_begin_simulation_clicked();
-
+    void on_origin_input_model_currentIndexChanged(int index);
+    void on_button_calibration_confirm_clicked();
+    void on_button_calibration_edit_clicked();
+    void set_calibration();
 private:
     Ui::MainWindowDesign ui;
     QNode qnode;
     QProcess *rosc;
+    Transform qtransform; //标定相对位置
 };
 
 }  // namespace test_gui

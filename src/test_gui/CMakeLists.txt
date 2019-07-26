@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS qt_build
     roscpp
     rospy
     std_msgs
+	tf
     tf2
     tf2_ros
     tf2_geometry_msgs
@@ -31,7 +32,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES my_msgs
-  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs tf2 tf2_ros message_runtime
+  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs tf tf2 tf2_ros message_runtime
 )
 include_directories(
   ${catkin_INCLUDE_DIRS}
@@ -66,7 +67,7 @@ file(GLOB_RECURSE QT_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} FOLLOW_SYMLINK
 # Binaries
 ##############################################################################
 
-add_executable(test_gui ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP} include/${PROJECT_NAME}/qnode.hpp)
+add_executable(test_gui ${QT_SOURCES} ${QT_RESOURCES_CPP} ${QT_FORMS_HPP} ${QT_MOC_HPP} include/${PROJECT_NAME}/qnode.hpp include/${PROJECT_NAME}/transform.hpp)
 add_dependencies(test_gui ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(test_gui ${QT_LIBRARIES} ${catkin_LIBRARIES})

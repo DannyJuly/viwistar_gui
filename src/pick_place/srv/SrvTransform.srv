@@ -1,5 +1,6 @@
 geometry_msgs/Transform origin
 geometry_msgs/Transform target
+float64 gripper
 ---
 bool result
 

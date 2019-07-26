@@ -46,7 +46,7 @@ public:
     void run();
     void shutdown() //for stop button
       {ros::shutdown();}
-    void set_origin(double x, double y, double z,double r_x,double r_y,double r_z,double r_w);
+    void set_origin(double x, double y, double z,double r_x,double r_y,double r_z,double r_w,double gripper);
     void set_target(double x, double y, double z,double r_x,double r_y,double r_z,double r_w);
     geometry_msgs::TransformStamped transformStamped;
     geometry_msgs::TransformStamped origin_position;
@@ -68,15 +68,6 @@ public:
         Fatal
     };
 
-/*    QStringListModel* loggingModel()
-        {return &logging_model;}
-    void log( const LogLevel &level, const std::string &msg);
-
-    void RecvTopicCallback(const std_msgs::StringConstPtr &msg);
-    QStringListModel* loggingModelLis()
-        {return &logging_listen;}
-    void log_listen(const LogLevel &level, const std::string &msg);*/
-
 Q_SIGNALS:
     //void loggingUpdated();
     //void loggingListen();
@@ -86,12 +77,12 @@ Q_SIGNALS:
 private:
     int init_argc;
     char** init_argv;
-    ros::Publisher chatter_publisher;
-    ros::Subscriber chatter_subscriber;
+  //  ros::Publisher chatter_publisher;
+   // ros::Subscriber chatter_subscriber;
     ros::ServiceClient origin_target_client;
-    QStringListModel logging_model; //QStringListModel is an editable model to
+   // QStringListModel logging_model; //QStringListModel is an editable model to
                                     //display a number of strings in a view widget
-    QStringListModel logging_listen;
+    //QStringListModel logging_listen;
 };
 
 }  // namespace test_gui

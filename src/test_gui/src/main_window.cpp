@@ -16,6 +16,7 @@
 #include <QProcess>
 #include "rviz/display.h"
 #include <QDebug>
+#include <unistd.h>
 /*****************************************************************************
 ** Namespaces
 *****************************************************************************/
@@ -29,7 +30,7 @@ using namespace Qt;
 *****************************************************************************/
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     : QMainWindow(parent) //constructor
-    , qnode(argc,argv)
+    , qnode(argc,argv), qtransform(argc,argv)
 {
     ui.setupUi(this); // Calling this incidentally connects all ui's triggers to on_...() callbacks in this class.
     QObject::connect(ui.actionAbout_Qt, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt())); // qApp is a global variable for the application
@@ -79,6 +80,17 @@ void MainWindow::showNoMasterMessage()
  */
 void MainWindow::on_button_connect_clicked(bool check)
 {
+    if(ui.checkbox_use_environment->isChecked())
+    {
+        if(!qtransform.init())
+         showNoMasterMessage();
+    }
+    else
+    {
+        if(!qtransform.init(ui.line_edit_master->text().toStdString(),
+                          ui.line_edit_host->text().toStdString()))
+            showNoMasterMessage();
+    }
 
     if(ui.robot_arm_choice->currentIndex()==1 && ui.model_choice->currentIndex()==0)
     {
@@ -102,7 +114,8 @@ void MainWindow::on_button_roscore_clicked()
               ui.button_roscore->setText(QString::fromLocal8Bit("关闭主节点"));
               rosc->start("roscore");
               rosc->waitForStarted();
-              QApplication::processEvents();
+              sleep(2);
+              //QApplication::processEvents();
               ui.button_connect->setEnabled(true);
               ui.button_connect_stop->setEnabled(true);
              flag_start_roscore = false;
@@ -119,7 +132,7 @@ void MainWindow::on_button_roscore_clicked()
 
 void MainWindow::on_shutdown_roscore_clicked()   //make sure they are all closed
 {
-
+    qnode.robot_choice->terminate();
     QProcess shutdown;
     shutdown.execute("killall -9 rviz");
     shutdown.waitForFinished();
@@ -156,30 +169,101 @@ void MainWindow::on_checkbox_use_environment_stateChanged(int state)
 void test_gui::MainWindow::on_confirm_input_clicked()
 {
  //read the input of target and origin position from lineEdit
-    double x,y,z,r_x,r_y,r_z,r_w; //origin
-    bool ok;
-    x = QString(ui.lineEdit_origin_x->text()).toDouble(&ok);
-    y = QString(ui.lineEdit_origin_y->text()).toDouble(&ok);
-    z = QString(ui.lineEdit_origin_z->text()).toDouble(&ok);
-    r_x = QString(ui.lineEdit_origin_rotation_x->text()).toDouble(&ok);
-    r_y = QString(ui.lineEdit_origin_rotation_y->text()).toDouble(&ok);
-    r_z = QString(ui.lineEdit_origin_rotation_z->text()).toDouble(&ok);
-    r_w = QString(ui.lineEdit_origin_rotation_w->text()).toDouble(&ok);
-    qnode.set_origin(x,y,z,r_x,r_y,r_z,r_w);
-    double t_x, t_y, t_z, tr_x,tr_y,tr_z,tr_w; //target
-    t_x = QString(ui.lineEdit_target_x->text()).toDouble(&ok);
-    t_y = QString(ui.lineEdit_target_y->text()).toDouble(&ok);
-    t_z = QString(ui.lineEdit_target_z->text()).toDouble(&ok);
-    tr_x = QString(ui.lineEdit_target_rotation_x->text()).toDouble(&ok);
-    tr_y = QString(ui.lineEdit_target_rotation_y->text()).toDouble(&ok);
-    tr_z = QString(ui.lineEdit_target_rotation_z->text()).toDouble(&ok);
-    tr_w = QString(ui.lineEdit_target_rotation_w->text()).toDouble(&ok);
-    qnode.set_target(t_x,t_y,t_z,tr_x,tr_y,tr_z,tr_w);
-    /*qDebug()<<"x:"<<t_x<<endl;
-    qDebug()<<"x:"<<t_y<<endl;*/
-    qnode.robot_simulation->start("rosrun pick_place panda_pick_place");
-    ui.button_begin_simulation->setEnabled(true);
+      double x,y,z,r_x,r_y,r_z,r_w, gripper; //origin
+      bool ok;
+      x = QString(ui.lineEdit_origin_x->text()).toDouble(&ok);
+      y = QString(ui.lineEdit_origin_y->text()).toDouble(&ok);
+      z = QString(ui.lineEdit_origin_z->text()).toDouble(&ok);
+      r_x = QString(ui.lineEdit_origin_rotation_x->text()).toDouble(&ok);
+      r_y = QString(ui.lineEdit_origin_rotation_y->text()).toDouble(&ok);
+      r_z = QString(ui.lineEdit_origin_rotation_z->text()).toDouble(&ok);
+      r_w = QString(ui.lineEdit_origin_rotation_w->text()).toDouble(&ok);
+      gripper = QString(ui.lineEdit_origin_gripper->text()).toDouble(&ok);
+      qnode.set_origin(x,y,z,r_x,r_y,r_z,r_w,gripper);
+      double t_x, t_y, t_z, tr_x,tr_y,tr_z,tr_w; //target
+      t_x = QString(ui.lineEdit_target_x->text()).toDouble(&ok);
+      t_y = QString(ui.lineEdit_target_y->text()).toDouble(&ok);
+      t_z = QString(ui.lineEdit_target_z->text()).toDouble(&ok);
+      tr_x = QString(ui.lineEdit_target_rotation_x->text()).toDouble(&ok);
+      tr_y = QString(ui.lineEdit_target_rotation_y->text()).toDouble(&ok);
+      tr_z = QString(ui.lineEdit_target_rotation_z->text()).toDouble(&ok);
+      tr_w = QString(ui.lineEdit_target_rotation_w->text()).toDouble(&ok);
+      qnode.set_target(t_x,t_y,t_z,tr_x,tr_y,tr_z,tr_w);
+      /*qDebug()<<"x:"<<t_x<<endl;
+      qDebug()<<"x:"<<t_y<<endl;*/
+      qnode.robot_simulation->start("rosrun pick_place panda_pick_place");
+      ui.button_begin_simulation->setEnabled(true);
+
     //system("gnome-terminal -x bash -c 'source ~/viwistar_gui3/devel/setup.bash; rosrun pick_place panda_pick_place'&");
+}
+
+void MainWindow::set_calibration()
+{
+  double t_x, t_y, t_z, tr_x,tr_y,tr_z,tr_w; //target
+  bool ok;
+  t_x = QString(ui.lineEdit_calibration_x->text()).toDouble(&ok);
+  t_y = QString(ui.lineEdit_calibration_y->text()).toDouble(&ok);
+  t_z = QString(ui.lineEdit_calibration_z->text()).toDouble(&ok);
+  tr_x = QString(ui.lineEdit_calibration_rotation_x->text()).toDouble(&ok);
+  tr_y = QString(ui.lineEdit_calibration_rotation_y->text()).toDouble(&ok);
+  tr_z = QString(ui.lineEdit_calibration_rotation_z->text()).toDouble(&ok);
+  tr_w = QString(ui.lineEdit_calibration_rotation_w->text()).toDouble(&ok);
+  qtransform.setTransform(t_x, t_y, t_z, tr_x,tr_y,tr_z,tr_w);
+}
+
+
+void test_gui::MainWindow::on_button_calibration_confirm_clicked()
+{
+
+  set_calibration();
+  ui.lineEdit_calibration_x->setEnabled(false);
+  ui.lineEdit_calibration_y->setEnabled(false);
+  ui.lineEdit_calibration_z->setEnabled(false);
+  ui.lineEdit_calibration_rotation_x->setEnabled(false);
+  ui.lineEdit_calibration_rotation_y->setEnabled(false);
+  ui.lineEdit_calibration_rotation_z->setEnabled(false);
+  ui.lineEdit_calibration_rotation_w->setEnabled(false);
+  ui.button_calibration_confirm->setEnabled(false);
+}
+
+void test_gui::MainWindow::on_button_calibration_edit_clicked()
+{
+      ui.button_calibration_confirm->setEnabled(true);
+      ui.lineEdit_calibration_x->setEnabled(true);
+      ui.lineEdit_calibration_y->setEnabled(true);
+      ui.lineEdit_calibration_z->setEnabled(true);
+      ui.lineEdit_calibration_rotation_x->setEnabled(true);
+      ui.lineEdit_calibration_rotation_y->setEnabled(true);
+      ui.lineEdit_calibration_rotation_z->setEnabled(true);
+      ui.lineEdit_calibration_rotation_w->setEnabled(true);
+      //qDebug()<<qtransform.T_robot_to_camera.getOrigin().x()<<endl;
+
+}
+
+void test_gui::MainWindow::on_origin_input_model_currentIndexChanged(int index)
+{
+    if(ui.origin_input_model->currentIndex()==1)
+    {
+      ui.lineEdit_origin_x->setEnabled(false);
+      ui.lineEdit_origin_y->setEnabled(false);
+      ui.lineEdit_origin_z->setEnabled(false);
+      ui.lineEdit_origin_rotation_x->setEnabled(false);
+      ui.lineEdit_origin_rotation_y->setEnabled(false);
+      ui.lineEdit_origin_rotation_z->setEnabled(false);
+      ui.lineEdit_origin_rotation_w->setEnabled(false);
+      ui.lineEdit_origin_gripper->setEnabled(false);
+    }
+    else
+    {
+      ui.lineEdit_origin_x->setEnabled(true);
+      ui.lineEdit_origin_y->setEnabled(true);
+      ui.lineEdit_origin_z->setEnabled(true);
+      ui.lineEdit_origin_rotation_x->setEnabled(true);
+      ui.lineEdit_origin_rotation_y->setEnabled(true);
+      ui.lineEdit_origin_rotation_z->setEnabled(true);
+      ui.lineEdit_origin_rotation_w->setEnabled(true);
+      ui.lineEdit_origin_gripper->setEnabled(true);
+    }
 }
 
 void test_gui::MainWindow::on_button_begin_simulation_clicked()
@@ -219,7 +303,9 @@ void test_gui::MainWindow::on_button_begin_simulation_clicked()
   else
   {
     //qDebug()<<qnode.robot_simulation->pid()<<endl;
-    qnode.robot_node->execute("rosnode kill /test_gui");
+    //qnode.robot_node->execute("rosnode kill /test_gui");
+    qnode.terminate();
+    qnode.wait(); //close the thread
     //qnode.robot_node->execute("rosnode kill /panda_arm_pick_place");
     qnode.robot_simulation->terminate();
     ui.confirm_input->setEnabled(true);
@@ -239,15 +325,7 @@ void test_gui::MainWindow::on_button_begin_simulation_clicked()
  * this will drop the cursor down to the last line in the QListview to ensure
  * the user can always see the latest log message.
  */
-//void MainWindow::updateLoggingView()
-//{
-//    ui.view_logging->scrollToBottom();
-//}
 
-//void MainWindow::updateLogListen()
-//{
-//    ui.view_listen->scrollToBottom();
-//}
 
 void MainWindow::updateposition()
 {
@@ -270,9 +348,25 @@ void MainWindow::ReadSettings()
     QSettings settings("Qt-Ros Package", "test_gui");//name
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
+
     QString master_url = settings.value("master_url",QString("http://192.168.1.2:11311/")).toString();
     QString host_url = settings.value("host_url", QString("192.168.1.3")).toString();//get the value of "host_url", QString is default
     QString topic_name = settings.value("topic_name", QString("/chatter")).toString();
+    QString calibration_x = settings.value("calibration_x",QString("0")).toString();
+    QString calibration_y = settings.value("calibration_y",QString("0")).toString();
+    QString calibration_z = settings.value("calibration_z",QString("0")).toString();
+    QString calibration_rotation_x = settings.value("calibration_rotation_x",QString("0")).toString();
+    QString calibration_rotation_y = settings.value("calibration_rotation_y",QString("0")).toString();
+    QString calibration_rotation_z = settings.value("calibration_rotation_z",QString("0")).toString();
+    QString calibration_rotation_w = settings.value("calibration_rotation_w",QString("0")).toString();
+    ui.lineEdit_calibration_x->setText(calibration_x);
+    ui.lineEdit_calibration_y->setText(calibration_y);
+    ui.lineEdit_calibration_z->setText(calibration_z);
+    ui.lineEdit_calibration_rotation_x->setText(calibration_rotation_x);
+    ui.lineEdit_calibration_rotation_y->setText(calibration_rotation_y);
+    ui.lineEdit_calibration_rotation_z->setText(calibration_rotation_z);
+    ui.lineEdit_calibration_rotation_w->setText(calibration_rotation_w);
+    set_calibration();
     ui.line_edit_master->setText(master_url);
     ui.line_edit_host->setText(host_url);
     ui.line_edit_topic->setText(topic_name);
@@ -297,6 +391,14 @@ void MainWindow::WriteSettings()
     settings.setValue("geometry", saveGeometry()); //set geometry as saveGeometry()
     settings.setValue("windowState", saveState());
     settings.setValue("remember_settings",QVariant(ui.checkbox_remember_settings->isChecked()));
+    settings.setValue("calibration_x",ui.lineEdit_calibration_x->text());
+    settings.setValue("calibration_y",ui.lineEdit_calibration_y->text());
+    settings.setValue("calibration_z",ui.lineEdit_calibration_z->text());
+    settings.setValue("calibration_rotation_x",ui.lineEdit_calibration_rotation_x->text());
+    settings.setValue("calibration_rotation_y",ui.lineEdit_calibration_rotation_y->text());
+    settings.setValue("calibration_rotation_z",ui.lineEdit_calibration_rotation_z->text());
+    settings.setValue("calibration_rotation_w",ui.lineEdit_calibration_rotation_w->text());
+
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -306,18 +408,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
       if (result==QMessageBox::Yes)
        {
           WriteSettings();
-          rosc->terminate();
-          on_shutdown_roscore_clicked();
-          qnode.robot_node->execute("rosnode kill /test_gui");
-          qnode.robot_node->execute("killall -9 bash");
+          rosc->terminate(); //close roscore
+          qnode.robot_choice->terminate(); //close the roslaunch
+          on_shutdown_roscore_clicked(); //make sure the above are all closed
+          qnode.robot_node->execute("rosnode kill /test_gui"); //close node test_gui
+          //qnode.robot_node->execute("killall -9 bash");
+          //qnode.robot_simulation->terminate();
+          qnode.shutdown(); //ros::shutdown,make sure it jump out of qnode run()
           qnode.robot_simulation->terminate();
-          qnode.shutdown();
-          qnode.terminate();
-          qnode.wait(); //close the thread
-          //on_shutdown_roscore_clicked();
-          delete qnode.robot_choice;
-          delete qnode.robot_simulation;
-          delete qnode.robot_node;
+          qnode.robot_simulation->kill();
           delete rosc;
           event->accept();
       }
@@ -330,5 +429,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 }  // namespace test_gui
+
+
+
+
+
 
 
