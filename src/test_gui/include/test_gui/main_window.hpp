@@ -16,9 +16,7 @@
 #include "ui_main_window.h" //该文件不显示，直接用于ui界面
 #include "qnode.hpp"
 #include "transform.hpp"
-#include <tf/LinearMath/Transform.h>
-#include <tf/LinearMath/Quaternion.h>
-#include <tf/LinearMath/Vector3.h>
+#include <unistd.h>
 /*****************************************************************************
 ** Namespace
 *****************************************************************************/
@@ -40,9 +38,10 @@ public:
 
     void ReadSettings(); // Load up qt program settings at startup
     void WriteSettings(); // Save qt program settings when closing
-
     void closeEvent(QCloseEvent *event); // Overloaded function
     void showNoMasterMessage();
+    void matrix_change(bool check);
+    void on_shutdown_roscore_clicked();
 
 public Q_SLOTS://Q_SLOTS 避免和第三方库冲突
     /******************************************
@@ -57,21 +56,22 @@ public Q_SLOTS://Q_SLOTS 避免和第三方库冲突
     //void updateLogListen();
     void on_button_connect_stop_clicked();
     void on_button_roscore_clicked();
-    void on_shutdown_roscore_clicked();
-    //void on_button_rviz_clicked();
-    //void on_button_connect_clicked();
     void on_confirm_input_clicked();
     void updateposition();
+    void updatetarget();
     void on_button_begin_simulation_clicked();
-    void on_origin_input_model_currentIndexChanged(int index);
-    void on_button_calibration_confirm_clicked();
-    void on_button_calibration_edit_clicked();
-    void set_calibration();
+    void on_matrix_input_clicked();
+    void on_matrix_edit_clicked();
+    void on_calibration_stop_clicked();
+    void on_calibration_start_clicked();
+    void on_input_model_currentIndexChanged(int index);
+
 private:
     Ui::MainWindowDesign ui;
     QNode qnode;
+    Transform qtransform;
     QProcess *rosc;
-    Transform qtransform; //标定相对位置
+    QProcess *rosrun;
 };
 
 }  // namespace test_gui

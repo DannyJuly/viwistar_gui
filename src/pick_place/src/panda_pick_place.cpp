@@ -66,7 +66,7 @@ void openGripper(trajectory_msgs::JointTrajectory& posture)
   // END_SUB_TUTORIAL
 }
 
-void closedGripper(trajectory_msgs::JointTrajectory& posture,double gripper)
+void closedGripper(trajectory_msgs::JointTrajectory& posture)
 {
   // BEGIN_SUB_TUTORIAL closed_gripper
   /* Add both finger joints of panda robot. */
@@ -77,13 +77,13 @@ void closedGripper(trajectory_msgs::JointTrajectory& posture,double gripper)
   /* Set them as closed. */
   posture.points.resize(1);
   posture.points[0].positions.resize(2);
-  posture.points[0].positions[0] = gripper/2-0.005;
-  posture.points[0].positions[1] = gripper/2-0.005;
+  posture.points[0].positions[0] = 0.025;
+  posture.points[0].positions[1] = 0.025;
   posture.points[0].time_from_start = ros::Duration(0.5);
   // END_SUB_TUTORIAL
 }
 
-void pick(moveit::planning_interface::MoveGroupInterface& move_group, geometry_msgs::Transform origin, double gripper)
+void pick(moveit::planning_interface::MoveGroupInterface& move_group, geometry_msgs::Transform origin)
 {
   // BEGIN_SUB_TUTORIAL pick1
   // Create a vector of grasps to be attempted, currently only creating single grasp.
@@ -132,7 +132,7 @@ void pick(moveit::planning_interface::MoveGroupInterface& move_group, geometry_m
   // BEGIN_SUB_TUTORIAL pick2
   // Setting posture of eef during grasp
   // +++++++++++++++++++++++++++++++++++
-  closedGripper(grasps[0].grasp_posture,gripper);
+  closedGripper(grasps[0].grasp_posture);
   // END_SUB_TUTORIAL
 
   // BEGIN_SUB_TUTORIAL pick3
@@ -238,7 +238,6 @@ class PositionServer
 public:
   geometry_msgs::Transform origin;
   geometry_msgs::Transform target;
-  double gripper;
   bool flag=true;
   bool SrvCallback(pick_place::SrvTransform::Request &req,
                   pick_place::SrvTransform::Response &res);
@@ -249,7 +248,6 @@ bool PositionServer::SrvCallback(pick_place::SrvTransform::Request &req,
 {
   origin = req.origin;
   target = req.target;
-  gripper = req.gripper;
   flag = false;
   res.result = true;
   return true;
@@ -279,7 +277,7 @@ int main(int argc, char** argv)
 // Wait a bit for ROS things to initialize
   ros::WallDuration(1.0).sleep();
 
-  pick(group,server.origin,server.gripper);
+  pick(group,server.origin);
 
   ros::WallDuration(1.0).sleep();
 

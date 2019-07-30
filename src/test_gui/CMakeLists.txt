@@ -32,7 +32,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES my_msgs
-  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs tf tf2 tf2_ros message_runtime
+  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs  tf tf2 tf2_ros message_runtime
 )
 include_directories(
   ${catkin_INCLUDE_DIRS}

@@ -36,8 +36,14 @@ public:
   void posCallback(const std_msgs::Float64MultiArrayConstPtr &msg);
   void setTransform(double x, double y, double z, double r_x, double r_y,double r_z, double r_w);
     tf::Transform T_robot_to_camera;
+  QString tempStr;
+  std_msgs::Float64MultiArray msg_target;
+
 protected:
   void run();
+
+Q_SIGNALS:
+  void realtimetarget();
 private:
   int init_argc;
   char** init_argv;

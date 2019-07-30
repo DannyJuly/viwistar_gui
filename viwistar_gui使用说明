@@ -1,0 +1,37 @@
+1.
+安装完ros kinetic版本后 ubuntu 16.04
+
+2.
+sudo apt-get install ros-kinetic-qt-ros
+3.
+
+修改 bashrc 
+gedit ~/.bashrc
+在最后加上： export ROS_HOSTNAME=localhost
+			export ROS_MASTER_URI=http://localhost:11311
+4.
+
+修改/usr/include/boost/type_traits/detail/has_binary_operator.hpp文件
+
+--- /usr/include/boost/type_traits/detail/has_binary_operator.hpp   2018-07-04 12:20:14.687475843 +0200
++++ /tmp/has_binary_operator.hpp    2018-07-04 12:23:58.763291879 +0200
+@@ -47,9 +47,7 @@
+ namespace detail {
+ 
+ // This namespace ensures that argument-dependent name lookup does not mess things up.
+-#ifndef Q_MOC_RUN
+ namespace BOOST_JOIN(BOOST_TT_TRAIT_NAME,_impl) {
+-//namespace BOOST_JOIN(BOOST_TT_TRAIT_NAME,_impl) {
+ 
+ // 1. a function to have an instance of type T without requiring T to be default
+ // constructible
+@@ -217,7 +215,6 @@
+ };
+ 
+ } // namespace impl
+-#endif
+ } // namespace detail
+ 
+ // this is the accessible definition of the trait to end user
+
+

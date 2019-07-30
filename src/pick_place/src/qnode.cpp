@@ -39,19 +39,10 @@ QNode::~QNode()  //shutdown the node when exit the gui
         ros::shutdown(); // explicitly needed since we use ros::start();
         ros::waitForShutdown(); //wait for this node to be shutdown
     }
+    terminate();
     wait();
 }
 
-void QNode::stop()
-{
-  if(ros::isStarted())
-  {
-      ros::shutdown(); // explicitly needed since we use ros::start();
-      ros::waitForShutdown(); //wait for this node to be shutdown
-  }
-  terminate();
-  wait();
-}
 bool QNode::init()
 {
     ros::init(init_argc,init_argv,"test_gui");
@@ -60,16 +51,8 @@ bool QNode::init()
         return false;
     }
     ros::start(); // explicitly needed since our nodehandle is going out of scope.
-    //ros::NodeHandle n;
-    //ros::NodeHandle nSub;
     ros::NodeHandle nh;
-    // Add your ros communications here.
-    //chatter_publisher = n.advertise<std_msgs::String>("testgui_chat", 1000);
-    //ros::Subscriber realtime_pos=nSub.subscribe("tf");
     origin_target_client = nh.serviceClient<test_gui::SrvTransform>("origin_target_position");
-    //chatter_subscriber = nSub.subscribe("testgui_chat", 100, &QNode::RecvTopicCallback, this);
-
-    //ros::spin();
     start(); //QThread::start -> run()
     return true;
 }
@@ -80,20 +63,13 @@ bool QNode::init(const std::string &master_url, const std::string &host_url)
     remappings["__master"] = master_url; //let __master = master_url
     remappings["__hostname"] = host_url;//__master:=http://foo:11311' or './my_node __master:=http://foo:11311' using the remapping arguments you foun
     ros::init(remappings,"test_gui"); //remappings is pointer array
-
     if (!ros::master::check())
     {
         return false;
     }
     ros::start(); // explicitly needed since our nodehandle is going out of scope.
-    //ros::NodeHandle n;
-   // ros::NodeHandle nSub;
     ros::NodeHandle nh;
-    // Add your ros communications here.
-    //ros::ServiceClient eef_position_client = n.serviceClient<ros
-    //chatter_publisher = n.advertise<std_msgs::String>("testgui_chat", 1000);
     origin_target_client = nh.serviceClient<test_gui::SrvTransform>("origin_target_position");
-    //chatter_subscriber = nSub.subscribe("testgui_chat", 100, &QNode::RecvTopicCallback, this);
     start();
     return true;
 }
@@ -120,7 +96,7 @@ void QNode::run()   //from QThread, after start()
       if(origin_target_client.call(position_srv))
       {flag_service_once = false;}
     }
-   // qDebug()<<"haha"<<flag_service_once
+    //qDebug()<<"haha"<<flag_service_once<<std::endl;
     //int count = 0;
     ros::Rate loop_rate(5);
     while (ros::ok())
@@ -134,7 +110,6 @@ void QNode::run()   //from QThread, after start()
             ros::Duration(1.0).sleep();
             continue;
           }
-      qDebug()<<"I AM IRON MAN";
 
       Q_EMIT realtimeposition();
      // origin_target_pub.publish(position_srv);

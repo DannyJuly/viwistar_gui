@@ -36,7 +36,9 @@ bool Transform::init()
     }
     ros::start(); // explicitly needed since our nodehandle is going out of scope.
     ros::NodeHandle nh;
+     ros::NodeHandle npub;
     transform_subscriber = nh.subscribe("pose_matrix",10,&Transform::posCallback,this);
+    transform_publisher = npub.advertise<std_msgs::Float64MultiArray>("pose_info",100);
     start(); //QThread::start -> run()
     return true;
 }
@@ -53,7 +55,9 @@ bool Transform::init(const std::string &master_url, const std::string &host_url)
   }
   ros::start(); // explicitly needed since our nodehandle is going out of scope.
   ros::NodeHandle nh;
+  ros::NodeHandle npub;
   transform_subscriber = nh.subscribe("pose_matrix",10,&Transform::posCallback,this);
+  transform_publisher = npub.advertise<std_msgs::Float64MultiArray>("pose_info",100);
   start(); //QThread::start -> run()
   return true;
 
@@ -66,24 +70,36 @@ void Transform::posCallback(const std_msgs::Float64MultiArrayConstPtr &msg)
   width = msg->data.at(7);
   T_camera.setOrigin((v_camera));
   T_camera.setRotation(q_camera);
-  qDebug()<<T_camera.getRotation().x();
+  //qDebug()<<T_camera.getRotation().x();
 
 }
 
 void Transform::run()
 {
   tf::Transform T_robot;
-  tf::Quaternion q_robot;
-  tf::Vector3 v_robot;
+  //tf::Quaternion q_robot;
+  //tf::Vector3 v_robot;
 
   ros::Rate rate(3);
   while(ros::ok())
   {
+
+    msg_target.data.resize(8);
     T_robot.mult(T_robot_to_camera,T_camera);
-    qDebug()<<T_robot_to_camera.getRotation().x();
-    q_robot = T_robot.getRotation();
-    v_robot = T_robot.getOrigin();
+    //qDebug()<<T_robot_to_camera.getRotation().x();
+    //q_robot = T_robot.getRotation();
+    //v_robot = T_robot.getOrigin();
     qDebug()<<T_robot.getRotation().x();
+    msg_target.data[0] = T_robot.getOrigin().x();
+    msg_target.data[1] = T_robot.getOrigin().y();
+    msg_target.data[2] = T_robot.getOrigin().z();
+    msg_target.data[3] = T_robot.getRotation().x();
+    msg_target.data[4] = T_robot.getRotation().y();
+    msg_target.data[5] = T_robot.getRotation().z();
+    msg_target.data[6] = T_robot.getRotation().w();
+    msg_target.data[7] = width;
+    transform_publisher.publish(msg_target);
+    Q_EMIT realtimetarget();
     ros::spinOnce();
     rate.sleep();
   }
