@@ -36,3 +36,6 @@ gedit ~/.bashrc
 
 5.git clone 至~目录
 
+6.terminal中进入viwistar_gui，输入catkin_make
+
+7.运行VIWISTAR
