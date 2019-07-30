@@ -34,4 +34,8 @@ gedit ~/.bashrc
  
  // this is the accessible definition of the trait to end user
 
+5.git clone 至~目录
 
+6.terminal中进入viwistar_gui，输入catkin_make
+
+7.运行VIWISTAR

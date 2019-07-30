@@ -2,7 +2,7 @@
 Name = VIWISTAR
 Comment= android studio 
 Exec=/home/dian/viwistar_gui/viwistar.sh
-Icon=/home/dian/viwistar_gui/src/test_gui/resources/images/viwistar_logo.png
+Icon=/home/dian/viwistar_gui/src/test_gui/resources/images/viwistar_icon.png
 Terminal=false 
 Type=Application
 
