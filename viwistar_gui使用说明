@@ -27,7 +27,7 @@ gedit ~/.bashrc
  // constructible
 @@ -217,7 +215,6 @@
  };
- 
+ 1
  } // namespace impl
 -#endif
  } // namespace detail
