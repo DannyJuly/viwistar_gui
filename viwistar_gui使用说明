@@ -3,6 +3,11 @@
 
 2.
 sudo apt-get install ros-kinetic-qt-ros
+sudo apt-get install ros-$ROS_DISTRO-moveit
+sudo apt-get install ros-$ROS_DISTRO-moveit-core
+sudo apt-get install ros-$ROS_DISTRO-moveit-visual-tools
+sudo apt-get install ros-kinetic-franka-description
+pip install defusedxml
 3.
 
 修改 bashrc 
