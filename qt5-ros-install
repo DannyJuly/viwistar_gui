@@ -1,0 +1,51 @@
+ubuntu 16.04 ros kinetic
+1. 
+install qt5-ros
+sudo add-apt-repository ppa:levi-armstrong/qt-libraries-xenial
+sudo add-apt-repository ppa:levi-armstrong/ppa
+sudo apt-get update && sudo apt-get install qt57creator-plugin-ros
+2.
+桌面建立文档，Qt-ROS.desktop(其他位置也行，一般在桌面）
+复制以下代码：
+[Desktop Entry]
+Exec=bash -i -c qtcreator %F
+Icon=QtProject-qtcreator
+Type=Application
+Terminal=false
+Name=Qt-ROS
+GenericName=Integrated Development Environment
+MimeType=text/x-c++src;text/x-c++hdr;text/x-xsrc;application/x-designer;application/vnd.nokia.qt.qmakeprofile;application/vnd.nokia.xml.qt.resource;
+Categories=Qt;Development;IDE;
+InitialPreference=9
+备注：Ecec=bash -i -c （qt安装路径，可在属性中修改）
+3.
+对桌面快捷启动图标右键选择
+Command 栏中改为bash -i -c /opt/qt59/bin/qtcreator （启动安装路径）
+
+
+qt5-ros中输入法无法输入中文
+原因是plugins目录下没有fcitx插件
+
+sudo apt-get install fcitx-frontend-qt5
+使用dpkg查找插件文件，fcitx在fcitx-frontend-qt5中，没有就用apt安装即可。
+$ dpkg -L fcitx-frontend-qt5 | grep .so
+所需文件地址：/usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/libfcitxplatforminputcontextplugin.so
+
+复制这个文件到QT Creator目录：
+本机地址为：     /opt/qt59/plugins/platforminputcontexts
+		/opt/qt59/plugins/platforminputcontexts
+
+也可能为：  qt安装目录/Tools/QtCreator/lib/Qt/plugins/platforminputcontexts/
+	cp /usr/lib/x86_64-linux-gnu/qt5/plugins/platforminputcontexts/libfcitxplatforminputcontextplugin.so 
+
+sudo chmod +x libfcitxplatforminputcontextplugin.so
+
+重启qt5-ros即可
+
+
+打开workspace
+ File->New file or project->other project->ROS Workspace
+
+
+
+
