@@ -1,0 +1,8 @@
+prefix=/home/dian/git/viwistar_gui/devel
+
+Name: panda_moveit_config
+Description: Description of panda_moveit_config
+Version: 0.7.2
+Cflags: 
+Libs: -L/home/dian/git/viwistar_gui/devel/lib 
+Requires: 

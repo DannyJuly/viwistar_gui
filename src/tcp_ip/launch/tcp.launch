@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="tcp_ip" type="tcp_client" name="tcp_client"/>
+    <node pkg="tcp_ip" type="ethernet_socket" name="ethernet_socket"/>
+</launch>
