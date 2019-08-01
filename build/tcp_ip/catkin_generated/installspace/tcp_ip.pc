@@ -1,8 +1,0 @@
-prefix=/home/dian/git/viwistar_gui/install
-
-Name: tcp_ip
-Description: Description of tcp_ip
-Version: 0.1.0
-Cflags: 
-Libs: -L/home/dian/git/viwistar_gui/install/lib -lros_tutorials_topic
-Requires: std_msgs roscpp

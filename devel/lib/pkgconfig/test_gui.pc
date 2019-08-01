@@ -1,8 +1,0 @@
-prefix=/home/dian/git/viwistar_gui/devel
-
-Name: test_gui
-Description: Description of test_gui
-Version: 0.1.0
-Cflags: -I/home/dian/git/viwistar_gui/devel/include -I/home/dian/git/viwistar_gui/src/test_gui/include
-Libs: -L/home/dian/git/viwistar_gui/devel/lib 
-Requires: geometry_msgs roscpp rospy std_msgs tf tf2 tf2_ros message_runtime

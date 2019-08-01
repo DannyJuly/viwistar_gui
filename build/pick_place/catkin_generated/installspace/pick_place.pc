@@ -1,8 +1,0 @@
-prefix=/home/dian/git/viwistar_gui/install
-
-Name: pick_place
-Description: Description of pick_place
-Version: 0.1.0
-Cflags: -I/home/dian/git/viwistar_gui/install/include -I/usr/include/eigen3
-Libs: -L/home/dian/git/viwistar_gui/install/lib 
-Requires: moveit_core moveit_visual_tools moveit_ros_planning_interface geometry_msgs roscpp rospy std_msgs message_runtime

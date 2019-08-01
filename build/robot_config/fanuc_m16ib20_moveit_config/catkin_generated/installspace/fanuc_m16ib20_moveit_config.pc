@@ -1,8 +1,0 @@
-prefix=/home/dian/git/viwistar_gui/install
-
-Name: fanuc_m16ib20_moveit_config
-Description: Description of fanuc_m16ib20_moveit_config
-Version: 0.4.4
-Cflags: 
-Libs: -L/home/dian/git/viwistar_gui/install/lib 
-Requires: 

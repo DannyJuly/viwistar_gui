@@ -1,8 +1,0 @@
-prefix=/home/dian/git/viwistar_gui/devel
-
-Name: fanuc_resources
-Description: Description of fanuc_resources
-Version: 0.4.4
-Cflags: 
-Libs: -L/home/dian/git/viwistar_gui/devel/lib 
-Requires: 
